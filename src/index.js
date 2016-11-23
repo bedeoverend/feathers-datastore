@@ -150,7 +150,7 @@ class Datastore {
         let special;
 
         // Normalize
-        if (typeof value !== 'object' || value instanceof this.store.key().constructor) {
+        if (typeof value !== 'object' || value instanceof this.store.key().constructor || value === null) {
           value = { '=': value };
         }
 

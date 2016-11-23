@@ -95,10 +95,27 @@ describe('feathers-datastore', () => {
         expect(found[0].id).to.equal(bobsChild);
       });
     });
+
+    it('should be able to filter by null values', () => {
+      let kind = 'Person',
+          people = service({ kind, projectId }),
+          orphan;
+
+      return Promise.all([
+        people.create({ name: 'James', father: null })
+      ]).then(([{ id }]) => {
+        orphan = id;
+        return people.find({ query: { father: null } });
+      }).then(found => {
+        expect(found.length).to.equal(1);
+        expect(found[0].id).to.equal(orphan);
+      });
+    });
   });
 
   describe('create', () => {
-    const service = service({ kind, projectId });
+    const kind = 'Person',
+          people = service({ kind, projectId });
 
     it('should set id resource prop to id in passed data, iff exists', () => {
       let data = { id: 'Bob', age: 23 };
