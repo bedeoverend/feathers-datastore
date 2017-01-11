@@ -1,8 +1,7 @@
 # Change Log
 
-## [Unreleased](https://github.com/bedeoverend/feathers-datastore/tree/HEAD)
-
-[Full Changelog](https://github.com/bedeoverend/feathers-datastore/compare/v0.1.1...HEAD)
+## [v0.1.2](https://github.com/bedeoverend/feathers-datastore/tree/v0.1.2) (2017-01-11)
+[Full Changelog](https://github.com/bedeoverend/feathers-datastore/compare/v0.1.1...v0.1.2)
 
 **Implemented enhancements:**
 
