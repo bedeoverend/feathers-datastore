@@ -27,6 +27,7 @@ class Datastore {
     this.id = options.id || 'id';
     this.kind = options.kind;
     this.events = options.events;
+    this.autoIndex = options.autoIndex || false;
 
     // NOTE: This isn't nice, but it's the only way to give internal methods full
     //  unrestricted (no hooks) access to all methods
@@ -77,7 +78,7 @@ class Datastore {
     }
 
     // Convert entities to explicit format, to allow for indexing
-    entities = Datastore.makeExplicitEntity(entities, params);
+    entities = this.makeExplicitEntity(entities, params);
 
     return promisify(this.store, 'insert')(entities)
       .then(() => entities)
@@ -90,7 +91,7 @@ class Datastore {
         { query = {} } = params,
         method = query.create ? 'upsert' : 'update';
 
-    entity = Datastore.makeExplicitEntity(entity, params);
+    entity = this.makeExplicitEntity(entity, params);
 
     return promisify(this.store, method)(entity)
       .then(() => entity)
@@ -126,7 +127,7 @@ class Datastore {
           entities = makeNewEntity(results, data);
         }
 
-        entities = Datastore.makeExplicitEntity(entities, params);
+        entities = this.makeExplicitEntity(entities, params);
 
         return promisify(this.store, 'update')(entities)
           .then(() => entities);
@@ -255,8 +256,8 @@ class Datastore {
     return Object.assign({}, entity.data, { [ this.id ]: entity.key.path.slice(-1)[0] });
   }
 
-  static makeExplicitEntity(entity, options = {}) {
-    const { dontIndex = [], autoIndex = false } = options.query || {};
+  makeExplicitEntity(entity, options = {}) {
+    const { dontIndex = [], autoIndex = this.autoIndex } = options.query || {};
 
     function expandData(data) {
       const toBasicResponse = (name) => ({ name, value: data[name] }),
@@ -278,7 +279,7 @@ class Datastore {
     }
 
     if (Array.isArray(entity)) {
-      return entity.map(Datastore.makeExplicitEntity);
+      return entity.map(this.makeExplicitEntity, this);
     }
 
     return {

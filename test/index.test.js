@@ -59,6 +59,11 @@ describe('feathers-datastore', () => {
     done();
   });
 
+  it('take autoIndex as a constructor prop, default to false', () => {
+    expect(service({ kind: 'Person', autoIndex: true }).autoIndex).to.equal(true);
+    expect(service({ kind: 'Person' }).autoIndex).to.equal(false);
+  });
+
   describe('Service utility tests', () => {
     describe('makeKey', () => {
       it(`should make path like: [kind, id]`, () => {
@@ -192,6 +197,14 @@ describe('feathers-datastore', () => {
           params = { query: { autoIndex: true } },
           id;
 
+      beforeEach(() => {
+        people._defaultAutoIndex = people.autoIndex;
+      });
+
+      afterEach(() => {
+        people.autoIndex = people._defaultAutoIndex;
+      });
+
       it('should not index lengths > 1500 bytes', () => {
         return people.create(partialData)
           .then(results => {
@@ -208,6 +221,23 @@ describe('feathers-datastore', () => {
           .then(() => people.find({ query: { small } }))
           .then((results) => {
             expect(results[0]).to.deep.equal(data);
+          });
+      });
+
+      it('should autoIndex if service.autoIndex is true', () => {
+        people.autoIndex = true;
+        return people.create(data)
+          .then(response => {
+            expect(response.big).to.equal(big);
+          });
+      });
+
+      it('should not auto index if not set', () => {
+        people.autoIndex = false;
+        return people.create(data)
+          .then(() => false, () => true)
+          .then(errored => {
+            expect(errored).to.equal(true);
           });
       });
     });
