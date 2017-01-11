@@ -22,7 +22,9 @@ function purge(done) {
 }
 
 describe('feathers-datastore', () => {
-  const app = feathers();
+  const app = feathers(),
+        kind = 'Person',
+        people = service({ kind, projectId });
 
   before((done) => {
     app.use('/datastore', service({
@@ -114,8 +116,24 @@ describe('feathers-datastore', () => {
   });
 
   describe('create', () => {
-    const kind = 'Person',
-          people = service({ kind, projectId });
+    it('set indexes when creating', () => {
+      let data = { id: 'Bob', age: 44, children: 2 },
+          params = { query: { dontIndex: ['age'] } };
+
+      return people.create(data, params)
+        .then(results => {
+          expect(results.age).to.equal(data.age);
+          expect(results.children).to.equal(data.children);
+        })
+        .then(() => people.find({ query: { age: { $lte: 50 } } }))
+        .then((results) => {
+          expect(results.length).to.equal(0);
+        })
+        .then(() => people.find({ query: { children: { $lte: 4 } } }))
+        .then((results) => {
+          expect(results[0]).to.deep.equal(data);
+        });
+    });
 
     it('should set id resource prop to id in passed data, iff exists', () => {
       let data = { id: 'Bob', age: 23 };
@@ -134,6 +152,87 @@ describe('feathers-datastore', () => {
         .then(() => people.find())
         .then(found => {
           expect(found).to.deep.equal(data);
+        });
+    });
+  });
+
+  describe('update', () => {
+    describe('indexes', () => {
+      let data = { id: 'Bob', age: 44, children: 2 },
+          params = { query: { dontIndex: ['age'] } },
+          id;
+
+      it('set indexes when updating', () => {
+        return people.create(data)
+          .then(results => {
+            id = results.id;
+            expect(results.age).to.equal(data.age);
+            expect(results.children).to.equal(data.children);
+          })
+          .then(() => people.update(id, data, params))
+          .then(() => people.find({ query: { age: { $lte: 50 } } }))
+          .then((results) => {
+            expect(results.length).to.equal(0);
+          })
+          .then(() => people.find({ query: { children: { $lte: 4 } } }))
+          .then((results) => {
+            expect(results[0]).to.deep.equal(data);
+          });
+      });
+    });
+
+    describe('auto indexing', () => {
+      const bigLength = 2000,
+            smallLength = 1000;
+
+      let big = Buffer.alloc(bigLength, 'a').toString(),
+          small = Buffer.alloc(smallLength, 'a').toString(),
+          partialData = { id: 'Bob' },
+          data = Object.assign({ big, small }, partialData),
+          params = { query: { autoIndex: true } },
+          id;
+
+      it('should not index lengths > 1500 bytes', () => {
+        return people.create(partialData)
+          .then(results => {
+            id = results.id;
+          })
+          .then(() => people.update(id, data, params))
+          // NOTE: Can't currently do this as can't perform a query of over 1500
+          //  (makes sense given cant index over 1500 bytes either) but in future
+          //  once $ne is supported, could achieve it via big: { $ne: 'not big' }
+          // .then(() => people.find({ query: { big }))
+          // .then((results) => {
+          //   expect(results.length).to.equal(0);
+          // })
+          .then(() => people.find({ query: { small } }))
+          .then((results) => {
+            expect(results[0]).to.deep.equal(data);
+          });
+      });
+    });
+  });
+
+  describe('patch', () => {
+    it('set indexes when patching', () => {
+      let data = { id: 'Bob', age: 44, children: 2 },
+          params = { query: { dontIndex: ['age'] } },
+          id;
+
+      return people.create(data)
+        .then(results => {
+          id = results.id;
+          expect(results.age).to.equal(data.age);
+          expect(results.children).to.equal(data.children);
+        })
+        .then(() => people.update(id, data, params))
+        .then(() => people.find({ query: { age: { $lte: 50 } } }))
+        .then((results) => {
+          expect(results.length).to.equal(0);
+        })
+        .then(() => people.find({ query: { children: { $lte: 4 } } }))
+        .then((results) => {
+          expect(results[0]).to.deep.equal(data);
         });
     });
   });

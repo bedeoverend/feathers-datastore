@@ -4,6 +4,8 @@ import Proto from 'uberproto';
 import { NotFound } from 'feathers-errors';
 const debug = makeDebug('feathers-datastore');
 
+const MAX_INDEX_SIZE = 1500;
+
 function promisify(obj, method) {
   return (...args) => {
     return new Promise((resolve, reject) => {
@@ -57,7 +59,7 @@ class Datastore {
       });
   }
 
-  _create(data, params) {
+  _create(data, params = {}) {
     let entities,
         key;
 
@@ -74,6 +76,9 @@ class Datastore {
       entities = data.map(data => ({ key, data }));
     }
 
+    // Convert entities to explicit format, to allow for indexing
+    entities = Datastore.makeExplicitEntity(entities, params);
+
     return promisify(this.store, 'insert')(entities)
       .then(() => entities)
       .then(e => this.entityToPlain(e));
@@ -84,6 +89,8 @@ class Datastore {
         entity = { key, data },
         { query = {} } = params,
         method = query.create ? 'upsert' : 'update';
+
+    entity = Datastore.makeExplicitEntity(entity, params);
 
     return promisify(this.store, method)(entity)
       .then(() => entity)
@@ -118,6 +125,8 @@ class Datastore {
         } else {
           entities = makeNewEntity(results, data);
         }
+
+        entities = Datastore.makeExplicitEntity(entities, params);
 
         return promisify(this.store, 'update')(entities)
           .then(() => entities);
@@ -235,7 +244,47 @@ class Datastore {
       return entity;
     }
 
+    if (Array.isArray(entity.data)) {
+      // In explicit syntax, should deconstruct
+      entity.data = entity.data.reduce((data, { name, value }) => {
+        data[name] = value;
+        return data;
+      }, {});
+    }
+
     return Object.assign({}, entity.data, { [ this.id ]: entity.key.path.slice(-1)[0] });
+  }
+
+  static makeExplicitEntity(entity, options = {}) {
+    const { dontIndex = [], autoIndex = false } = options.query || {};
+
+    function expandData(data) {
+      const toBasicResponse = (name) => ({ name, value: data[name] }),
+            addExclusions = (response) => {
+              if (autoIndex) {
+                response.excludeFromIndexes = Buffer.from(response.value).length > MAX_INDEX_SIZE;
+              }
+
+              if (dontIndex.includes(response.name)) {
+                response.excludeFromIndexes = true;
+              }
+
+              return response;
+            };
+
+      return Object.keys(data)
+        .map(toBasicResponse)
+        .map(addExclusions);
+    }
+
+    if (Array.isArray(entity)) {
+      return entity.map(Datastore.makeExplicitEntity);
+    }
+
+    return {
+      key: entity.key,
+      data: expandData(entity.data)
+    };
   }
 }
 
