@@ -45,7 +45,7 @@ app.service('/user')
 ### Datastore Keys
 The datastore service has a `makeKey` method which is called to convert a resource `id` into a Datastore Entity key. By default it makes a Key with path `[ this.kind, id ]` and namespace as per the namespace query property.
 
-This method can be overridden in order to serialize / deserialize keys from the ID. 
+This method can be overridden in order to serialize / deserialize keys from the ID.
 
 ### Finding descendants
 
@@ -61,6 +61,37 @@ app.service('/user')
     ...
   });
 ```
+
+### Indexing
+Datastore will error if entity properties are > 1500 bytes and are set to index, so it's worth defining indexing if you can.
+
+Properties can be excluded from indexing by setting the query param `dontIndex` e.g.
+```js
+app.service('/user')
+  .create({
+    name: 'Stacey'
+    age: 24,
+    description: '...'
+  }, {
+    query: {
+      dontIndex: [ 'description' ]
+    }
+  });
+```
+`feathers-datastore` can also automatically decide on whether or not to index based on the size of the entity. To enable, set `autoIndex` to true e.g.
+```js
+app.service('/user')
+  .create({
+    name: 'Stacey'
+    age: 24,
+    description: 'Some massive description...'
+  }, {
+    query: {
+      autoIndex: true
+    }
+  });
+```
+in which case if for example `description` is larger than 1500 bytes, it won't be indexed.
 
 ### Complete Example
 
