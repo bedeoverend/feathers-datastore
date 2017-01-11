@@ -1,5 +1,17 @@
 # Change Log
 
+## [Unreleased](https://github.com/bedeoverend/feathers-datastore/tree/HEAD)
+
+[Full Changelog](https://github.com/bedeoverend/feathers-datastore/compare/v0.1.1...HEAD)
+
+**Implemented enhancements:**
+
+- Add option to exclude property from indexing [\#2](https://github.com/bedeoverend/feathers-datastore/issues/2)
+
+**Merged pull requests:**
+
+- Add indexing controls. Fixes \#2 [\#3](https://github.com/bedeoverend/feathers-datastore/pull/3) ([bedeoverend](https://github.com/bedeoverend))
+
 ## [v0.1.1](https://github.com/bedeoverend/feathers-datastore/tree/v0.1.1) (2016-11-23)
 [Full Changelog](https://github.com/bedeoverend/feathers-datastore/compare/v0.1.0...v0.1.1)
 
