@@ -1,7 +1,23 @@
 # Change Log
 
+## [v0.1.4](https://github.com/bedeoverend/feathers-datastore/tree/v0.1.4) (2017-01-12)
+[Full Changelog](https://github.com/bedeoverend/feathers-datastore/compare/v0.1.3...v0.1.4)
+
+**Fixed bugs:**
+
+- Allow storage of sub properties \> 1500 bytes [\#6](https://github.com/bedeoverend/feathers-datastore/issues/6)
+
+**Merged pull requests:**
+
+- Allow saving large subvalues. Fixes \#6 [\#7](https://github.com/bedeoverend/feathers-datastore/pull/7) ([bedeoverend](https://github.com/bedeoverend))
+- Update to datastore 0.6.0 [\#5](https://github.com/bedeoverend/feathers-datastore/pull/5) ([bedeoverend](https://github.com/bedeoverend))
+
 ## [v0.1.3](https://github.com/bedeoverend/feathers-datastore/tree/v0.1.3) (2017-01-11)
 [Full Changelog](https://github.com/bedeoverend/feathers-datastore/compare/v0.1.2...v0.1.3)
+
+**Closed issues:**
+
+- Add autoIndex as constructor option [\#4](https://github.com/bedeoverend/feathers-datastore/issues/4)
 
 ## [v0.1.2](https://github.com/bedeoverend/feathers-datastore/tree/v0.1.2) (2017-01-11)
 [Full Changelog](https://github.com/bedeoverend/feathers-datastore/compare/v0.1.1...v0.1.2)
