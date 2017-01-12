@@ -6,20 +6,6 @@ const debug = makeDebug('feathers-datastore');
 
 const MAX_INDEX_SIZE = 1500;
 
-function promisify(obj, method) {
-  return (...args) => {
-    return new Promise((resolve, reject) => {
-      obj[method](...args, (err, result) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(result);
-        }
-      });
-    });
-  };
-}
-
 class Datastore {
   constructor(options = {}) {
     this.store = datastore({ projectId: options.projectId });
@@ -49,7 +35,8 @@ class Datastore {
 
   _get(id, params) {
     let key = this.makeKey(id, params);
-    return promisify(this.store, 'get')(key)
+    return this.store.get(key)
+      .then(([ entity ]) => entity)
       .then(this.entityToPlain(true))
       .then(entity => {
         if (!entity) {
@@ -80,7 +67,7 @@ class Datastore {
     // Convert entities to explicit format, to allow for indexing
     entities = this.makeExplicitEntity(entities, params);
 
-    return promisify(this.store, 'insert')(entities)
+    return this.store.insert(entities)
       .then(() => entities)
       .then(this.entityToPlain());
   }
@@ -93,7 +80,7 @@ class Datastore {
 
     entity = this.makeExplicitEntity(entity, params);
 
-    return promisify(this.store, method)(entity)
+    return this.store[method](entity)
       .then(() => entity)
       .then(this.entityToPlain())
       .catch(err => {
@@ -129,7 +116,7 @@ class Datastore {
 
         entities = this.makeExplicitEntity(entities, params);
 
-        return promisify(this.store, 'update')(entities)
+        return this.store.update(entities)
           .then(() => entities);
       })
       .then(this.entityToPlain());
@@ -209,7 +196,7 @@ class Datastore {
           keys = this.makeKey(results[ this.id ], params);
         }
 
-        return promisify(this.store, 'delete')(keys)
+        return this.store.delete(keys)
           .then(() => results);
       });
   }
