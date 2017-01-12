@@ -37,7 +37,7 @@ class Datastore {
     let key = this.makeKey(id, params);
     return this.store.get(key)
       .then(([ entity ]) => entity)
-      .then(this.entityToPlain(true))
+      .then(entity => this.entityToPlain(entity, true))
       .then(entity => {
         if (!entity) {
           throw new NotFound(`No record found for id '${id}'`);
@@ -69,7 +69,7 @@ class Datastore {
 
     return this.store.insert(entities)
       .then(() => entities)
-      .then(this.entityToPlain());
+      .then(entity => this.entityToPlain(entity));
   }
 
   _update(id, data, params = {}) {
@@ -82,7 +82,7 @@ class Datastore {
 
     return this.store[method](entity)
       .then(() => entity)
-      .then(this.entityToPlain())
+      .then(entity => this.entityToPlain(entity))
       .catch(err => {
         // NOTE: Updating a not found entity will result in a bad request, rather than
         //  a not found, this gets around that, though in future should be made more
@@ -119,7 +119,7 @@ class Datastore {
         return this.store.update(entities)
           .then(() => entities);
       })
-      .then(this.entityToPlain());
+      .then(entity => this.entityToPlain(entity));
   }
 
   _find(params = {}) {
@@ -174,7 +174,7 @@ class Datastore {
 
     return dsQuery.run()
       .then(([ e ]) => e)
-      .then(this.entityToPlain(true))
+      .then(entity => this.entityToPlain(entity, true))
       .then(data => {
         if (ancestor) {
           return data.filter(({ id }) => id !== ancestor);
@@ -224,34 +224,29 @@ class Datastore {
     return key;
   }
 
-  entityToPlain(alreadyFlat = false) {
+  entityToPlain(entity, alreadyFlat = false) {
     const ID_PROP = this.id;
+    let data;
 
-    function makePlain(entity) {
-      let data;
-
-      if (Array.isArray(entity)) {
-        return entity.map(makePlain);
-      }
-
-      if (!entity) {
-        return entity;
-      }
-
-      data = alreadyFlat ? entity : entity.data;
-
-      if (Array.isArray(data)) {
-        // In explicit syntax, should deconstruct
-        data = data.reduce((flat, { name, value }) => {
-          flat[name] = value;
-          return flat;
-        }, {});
-      }
-
-      return Object.assign({}, data, { [ ID_PROP ]: Datastore.getKey(entity).path.slice(-1)[0] });
+    if (Array.isArray(entity)) {
+      return entity.map(e => this.entityToPlain(e, alreadyFlat));
     }
 
-    return makePlain;
+    if (!entity) {
+      return entity;
+    }
+
+    data = alreadyFlat ? entity : entity.data;
+
+    if (Array.isArray(data)) {
+      // In explicit syntax, should deconstruct
+      data = data.reduce((flat, { name, value }) => {
+        flat[name] = value;
+        return flat;
+      }, {});
+    }
+
+    return Object.assign({}, data, { [ ID_PROP ]: Datastore.getKey(entity).path.slice(-1)[0] });
   }
 
   makeExplicitEntity(entity, options = {}) {
