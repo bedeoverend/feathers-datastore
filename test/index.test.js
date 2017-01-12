@@ -16,7 +16,7 @@ function purge(done) {
         return;
       }
 
-      let keys = entities.map(({ key }) => key);
+      let keys = entities.map(service.Service.getKey);
       store.delete(keys, done);
     });
 }

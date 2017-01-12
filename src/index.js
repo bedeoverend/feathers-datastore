@@ -6,20 +6,6 @@ const debug = makeDebug('feathers-datastore');
 
 const MAX_INDEX_SIZE = 1500;
 
-function promisify(obj, method) {
-  return (...args) => {
-    return new Promise((resolve, reject) => {
-      obj[method](...args, (err, result) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(result);
-        }
-      });
-    });
-  };
-}
-
 class Datastore {
   constructor(options = {}) {
     this.store = datastore({ projectId: options.projectId });
@@ -49,8 +35,9 @@ class Datastore {
 
   _get(id, params) {
     let key = this.makeKey(id, params);
-    return promisify(this.store, 'get')(key)
-      .then(e => this.entityToPlain(e))
+    return this.store.get(key)
+      .then(([ entity ]) => entity)
+      .then(this.entityToPlain(true))
       .then(entity => {
         if (!entity) {
           throw new NotFound(`No record found for id '${id}'`);
@@ -80,9 +67,9 @@ class Datastore {
     // Convert entities to explicit format, to allow for indexing
     entities = this.makeExplicitEntity(entities, params);
 
-    return promisify(this.store, 'insert')(entities)
+    return this.store.insert(entities)
       .then(() => entities)
-      .then(e => this.entityToPlain(e));
+      .then(this.entityToPlain());
   }
 
   _update(id, data, params = {}) {
@@ -93,9 +80,9 @@ class Datastore {
 
     entity = this.makeExplicitEntity(entity, params);
 
-    return promisify(this.store, method)(entity)
+    return this.store[method](entity)
       .then(() => entity)
-      .then(e => this.entityToPlain(e))
+      .then(this.entityToPlain())
       .catch(err => {
         // NOTE: Updating a not found entity will result in a bad request, rather than
         //  a not found, this gets around that, though in future should be made more
@@ -129,10 +116,10 @@ class Datastore {
 
         entities = this.makeExplicitEntity(entities, params);
 
-        return promisify(this.store, 'update')(entities)
+        return this.store.update(entities)
           .then(() => entities);
       })
-      .then(e => this.entityToPlain(e));
+      .then(this.entityToPlain());
   }
 
   _find(params = {}) {
@@ -185,8 +172,9 @@ class Datastore {
 
     dsQuery = filters.reduce((q, filter) => q.filter(...filter), dsQuery);
 
-    return promisify(dsQuery, 'run')()
-      .then(e => this.entityToPlain(e))
+    return dsQuery.run()
+      .then(([ e ]) => e)
+      .then(this.entityToPlain(true))
       .then(data => {
         if (ancestor) {
           return data.filter(({ id }) => id !== ancestor);
@@ -208,7 +196,7 @@ class Datastore {
           keys = this.makeKey(results[ this.id ], params);
         }
 
-        return promisify(this.store, 'delete')(keys)
+        return this.store.delete(keys)
           .then(() => results);
       });
   }
@@ -236,24 +224,34 @@ class Datastore {
     return key;
   }
 
-  entityToPlain(entity) {
-    if (Array.isArray(entity)) {
-      return entity.map(e => this.entityToPlain(e));
+  entityToPlain(alreadyFlat = false) {
+    const ID_PROP = this.id;
+
+    function makePlain(entity) {
+      let data;
+
+      if (Array.isArray(entity)) {
+        return entity.map(makePlain);
+      }
+
+      if (!entity) {
+        return entity;
+      }
+
+      data = alreadyFlat ? entity : entity.data;
+
+      if (Array.isArray(data)) {
+        // In explicit syntax, should deconstruct
+        data = data.reduce((flat, { name, value }) => {
+          flat[name] = value;
+          return flat;
+        }, {});
+      }
+
+      return Object.assign({}, data, { [ ID_PROP ]: Datastore.getKey(entity).path.slice(-1)[0] });
     }
 
-    if (!entity) {
-      return entity;
-    }
-
-    if (Array.isArray(entity.data)) {
-      // In explicit syntax, should deconstruct
-      entity.data = entity.data.reduce((data, { name, value }) => {
-        data[name] = value;
-        return data;
-      }, {});
-    }
-
-    return Object.assign({}, entity.data, { [ this.id ]: entity.key.path.slice(-1)[0] });
+    return makePlain;
   }
 
   makeExplicitEntity(entity, options = {}) {
@@ -283,9 +281,13 @@ class Datastore {
     }
 
     return {
-      key: entity.key,
+      key: Datastore.getKey(entity),
       data: expandData(entity.data)
     };
+  }
+
+  static getKey(entity) {
+    return entity[datastore.KEY] || entity.key;
   }
 }
 

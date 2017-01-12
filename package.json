@@ -44,7 +44,7 @@
     "lib": "lib"
   },
   "dependencies": {
-    "@google-cloud/datastore": "^0.4.0",
+    "@google-cloud/datastore": "0.6.0",
     "debug": "^2.2.0",
     "es6-promisify": "^5.0.0",
     "feathers-errors": "^2.4.0",
