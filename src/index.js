@@ -257,15 +257,29 @@ class Datastore {
   makeExplicitEntity(entity, options = {}) {
     const { dontIndex = [], autoIndex = this.autoIndex } = options.query || {};
 
+    function isBig(value) {
+      let valueType = typeof value;
+
+      if (valueType === 'string' || valueType === 'number' || value instanceof Buffer) {
+        return Buffer.from(value).length > MAX_INDEX_SIZE;
+      } else if (valueType === 'object' && value !== null) {
+        // Must be an object, recursively build response
+        return Object.keys(value)
+          .map(key => value[key])
+          .some(isBig);
+      }
+
+      // Undefined or null
+      return false;
+    }
+
     function expandData(data) {
       const toBasicResponse = (name) => ({ name, value: data[name] }),
             addExclusions = (response) => {
-              if (autoIndex) {
-                response.excludeFromIndexes = Buffer.from(response.value).length > MAX_INDEX_SIZE;
-              }
-
               if (dontIndex.includes(response.name)) {
                 response.excludeFromIndexes = true;
+              } else if (autoIndex) {
+                response.excludeFromIndexes = isBig(response.value);
               }
 
               return response;

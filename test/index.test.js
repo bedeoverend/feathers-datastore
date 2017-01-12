@@ -240,6 +240,16 @@ describe('feathers-datastore', () => {
             expect(errored).to.equal(true);
           });
       });
+
+      it('should accept indexing decisions even on null value', () => {
+        people.autoIndex = true;
+        return people.create(Object.assign({ bad: null }, data));
+      });
+
+      it('should perform indexing on deep objects', () => {
+        people.autoIndex = true;
+        return people.create(Object.assign({ deep: { big } }, data));
+      });
     });
   });
 
