@@ -250,6 +250,11 @@ describe('feathers-datastore', () => {
         people.autoIndex = true;
         return people.create(Object.assign({ deep: { big } }, data));
       });
+
+      it('should be able to handle numbers', () => {
+        people.autoIndex = true;
+        return people.create(Object.assign({ num: 4 }, data));
+      });
     });
   });
 

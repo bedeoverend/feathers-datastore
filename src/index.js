@@ -255,7 +255,7 @@ class Datastore {
     function isBig(value) {
       let valueType = typeof value;
 
-      if (valueType === 'string' || valueType === 'number' || value instanceof Buffer) {
+      if (valueType === 'string' || value instanceof Buffer) {
         return Buffer.from(value).length > MAX_INDEX_SIZE;
       } else if (valueType === 'object' && value !== null) {
         // Must be an object, recursively build response
@@ -264,7 +264,8 @@ class Datastore {
           .some(isBig);
       }
 
-      // Undefined or null
+      // Number, boolean, undefined and null we either don't care about or are
+      //  guaranteed < 1500
       return false;
     }
 
