@@ -6,7 +6,11 @@
   "main": "lib/",
   "keywords": [
     "feathers",
-    "feathers-plugin"
+    "feathers-plugin",
+    "datastore",
+    "google",
+    "gcloud",
+    "google-cloud"
   ],
   "license": "MIT",
   "repository": {
@@ -14,9 +18,7 @@
     "url": "git://github.com/bedeoverend/feathers-datastore.git"
   },
   "author": {
-    "name": "Feathers contributors",
-    "email": "hello@feathersjs.com",
-    "url": "https://feathersjs.com"
+    "name": "Bede Overend"
   },
   "contributors": [],
   "bugs": {
