@@ -1,7 +1,7 @@
 import datastore from '@google-cloud/datastore';
 import makeDebug from 'debug';
 import Proto from 'uberproto';
-import { NotFound } from 'feathers-errors';
+import { NotFound, BadRequest } from 'feathers-errors';
 const debug = makeDebug('feathers-datastore');
 
 const MAX_INDEX_SIZE = 1500;
@@ -134,6 +134,21 @@ class Datastore {
       dsQuery = dsQuery.hasAncestor(ancestorKey);
     }
 
+    if (params.query.$sort) {
+      let keys = Object.keys(params.query.$sort),
+          sortBy,
+          descending;
+
+      if (keys.length !== 1) {
+        throw new BadRequest(`Only allowed 1 sort query. Found ${keys.length}`);
+      }
+
+      sortBy = keys[0];
+      descending = parseInt(params.query.$sort[sortBy]) === -1;
+
+      dsQuery.order(sortBy, { descending });
+    }
+
     filters = Object.entries(query)
       .reduce((filters, [key, value]) => {
         const opMap = {
@@ -151,21 +166,25 @@ class Datastore {
           value = { '=': value };
         }
 
-        special = Object.entries(value)
-          .filter(([ op ]) => opMap[op])
-          .map(([ op, val ]) => {
-            // Try convert it into a number
-            if (typeof val === 'string') {
-              let valAsNum = parseFloat(val);
+        if (Array.isArray(value)) {
+          special = value.map(val => [ key, '=', val ]);
+        } else {
+          special = Object.entries(value)
+            .filter(([ op ]) => opMap[op])
+            .map(([ op, val ]) => {
+              // Try convert it into a number
+              if (typeof val === 'string') {
+                let valAsNum = parseFloat(val);
 
-              if (!isNaN(valAsNum)) {
-                // Its a number, assign it to original val
-                val = valAsNum;
+                if (!isNaN(valAsNum)) {
+                  // Its a number, assign it to original val
+                  val = valAsNum;
+                }
               }
-            }
 
-            return [ key, opMap[op], val ];
-          });
+              return [ key, opMap[op], val ];
+            });
+        }
 
         return [...filters, ...special];
       }, []);
