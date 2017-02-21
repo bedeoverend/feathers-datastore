@@ -96,9 +96,11 @@ class Datastore {
   }
 
   _patch(id, data, params) {
+    const get = Datastore.prototype._get.bind(this),
+          find = Datastore.prototype._find.bind(this);
 
     return Promise.resolve()
-      .then(() => id ? this._get(id, params) : this._find(params))
+      .then(() => id ? get(id, params) : find(params))
       .then(results => {
         let entities,
             makeNewEntity = (current, update) => {
@@ -185,10 +187,17 @@ class Datastore {
   }
 
   _remove(id, params) {
+    const get = Datastore.prototype._get.bind(this),
+          find = Datastore.prototype._find.bind(this);
+
     return Promise.resolve()
-      .then(() => id ? this._get(id, params) : this._find(params))
+      .then(() => id ? get(id, params) : find(params))
       .then(results => {
         let keys;
+
+        if (results === null) {
+          return null;
+        }
 
         if (Array.isArray(results)) {
           keys = results.map(({ [ this.id ]: id }) => this.makeKey(id, params));
