@@ -53,20 +53,26 @@ class Datastore {
   }
 
   _create(data, params = {}) {
-    let entities,
+    let entities = [],
         key;
 
-    if (data.hasOwnProperty(this.id)) {
-      key = this.makeKey(data[this.id], params);
-    } else {
-      key = this.makeKey(undefined, params);
-    }
+    data = Array.isArray(data) ? data : [data];
 
-    entities = { key, data };
+    data.map(item => {
+      if (item.hasOwnProperty(this.id)) {
+        key = this.makeKey(item[this.id], params);
+      } else {
+        key = this.makeKey(undefined, params);
+      }
+      entities.push({
+        key,
+        data: item,
+      });
+    });
 
-    // Normalize
-    if (Array.isArray(data)) {
-      entities = data.map(data => ({ key, data }));
+    // unbox if only 1 entity is inserted
+    if (data.length === 1) {
+      entities = entities[0];
     }
 
     // Convert entities to explicit format, to allow for indexing
