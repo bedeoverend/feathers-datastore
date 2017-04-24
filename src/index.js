@@ -8,7 +8,12 @@ const MAX_INDEX_SIZE = 1500;
 
 class Datastore {
   constructor(options = {}) {
-    this.store = datastore({ projectId: options.projectId });
+    const datastoreOpt = { projectId: options.projectId };
+
+    if (options.credentials) {
+      datastoreOpt.credentials = options.credentials;
+    }
+    this.store = datastore(datastoreOpt);
 
     this.id = options.id || 'id';
     this.kind = options.kind;
