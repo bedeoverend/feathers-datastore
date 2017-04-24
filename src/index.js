@@ -307,7 +307,7 @@ class Datastore {
     }
 
     if (Array.isArray(entity)) {
-      return entity.map(this.makeExplicitEntity, this);
+      return entity.map((e) => this.makeExplicitEntity(e, options), this);
     }
 
     return {
