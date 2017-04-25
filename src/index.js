@@ -54,9 +54,11 @@ class Datastore {
 
   _create(data, params = {}) {
     let entities = [],
-        key;
+        key,
+        wasArray;
 
-    data = Array.isArray(data) ? data : [data];
+    wasArray = Array.isArray(data);
+    data = wasArray ? data : [data];
 
     data.map(item => {
       if (item.hasOwnProperty(this.id)) {
@@ -70,8 +72,8 @@ class Datastore {
       });
     });
 
-    // unbox if only 1 entity is inserted
-    if (data.length === 1) {
+    // unbox if data param was an object
+    if (!wasArray) {
       entities = entities[0];
     }
 
