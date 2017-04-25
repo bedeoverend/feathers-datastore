@@ -8,7 +8,12 @@ const MAX_INDEX_SIZE = 1500;
 
 class Datastore {
   constructor(options = {}) {
-    this.store = datastore({ projectId: options.projectId });
+    const datastoreOpt = { projectId: options.projectId };
+
+    if (options.credentials) {
+      datastoreOpt.credentials = options.credentials;
+    }
+    this.store = datastore(datastoreOpt);
 
     this.id = options.id || 'id';
     this.kind = options.kind;
@@ -48,20 +53,28 @@ class Datastore {
   }
 
   _create(data, params = {}) {
-    let entities,
-        key;
+    let entities = [],
+        key,
+        wasArray;
 
-    if (data.hasOwnProperty(this.id)) {
-      key = this.makeKey(data[this.id], params);
-    } else {
-      key = this.makeKey(undefined, params);
-    }
+    wasArray = Array.isArray(data);
+    data = wasArray ? data : [data];
 
-    entities = { key, data };
+    data.map(item => {
+      if (item.hasOwnProperty(this.id)) {
+        key = this.makeKey(item[this.id], params);
+      } else {
+        key = this.makeKey(undefined, params);
+      }
+      entities.push({
+        key,
+        data: item,
+      });
+    });
 
-    // Normalize
-    if (Array.isArray(data)) {
-      entities = data.map(data => ({ key, data }));
+    // unbox if data param was an object
+    if (!wasArray) {
+      entities = entities[0];
     }
 
     // Convert entities to explicit format, to allow for indexing
@@ -296,7 +309,7 @@ class Datastore {
     }
 
     if (Array.isArray(entity)) {
-      return entity.map(this.makeExplicitEntity, this);
+      return entity.map((e) => this.makeExplicitEntity(e, options), this);
     }
 
     return {
