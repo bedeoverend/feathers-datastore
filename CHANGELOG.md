@@ -1,5 +1,12 @@
 # Change Log
 
+## [v0.1.7](https://github.com/bedeoverend/feathers-datastore/tree/v0.1.7) (2017-04-25)
+[Full Changelog](https://github.com/bedeoverend/feathers-datastore/compare/v0.1.6...v0.1.7)
+
+**Merged pull requests:**
+
+- Fixed 2 bugs + Added possibility to use credentials object for auth [\#9](https://github.com/bedeoverend/feathers-datastore/pull/9) ([quentin-sommer](https://github.com/quentin-sommer))
+
 ## [v0.1.6](https://github.com/bedeoverend/feathers-datastore/tree/v0.1.6) (2017-02-21)
 [Full Changelog](https://github.com/bedeoverend/feathers-datastore/compare/v0.1.5...v0.1.6)
 
