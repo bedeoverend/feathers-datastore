@@ -22,6 +22,20 @@ Proper pagination, sorting and certain query filters are not yet implemented. Yo
 
 It's also worth noting that unless you index your datastore properly, you may run into issues running many combined filters. See [querying Google Datastore](https://cloud.google.com/datastore/docs/concepts/queries).
 
+### Credentials
+If you're wishing to manually authenticate using credentials, pass a [credentials object](https://googlecloudplatform.github.io/google-cloud-node/#/docs/datastore/1.0.0/guides/authentication) to the service factory function e.g.
+
+```js
+let credentials = {
+  client_email: process.env.GCLOUD_CLIENT_EMAIL,
+  private_key: process.env.GCLOUD_PRIVATE_KEY
+};
+
+app.use('/user', datastore({ credentials }))
+```
+
+_Note: as with Google Cloud, this isn't needed if you're running in an environment which authenticates for you e.g. App Engine or a local machine with the gcloud SDK_
+
 ### Kinds
 Each service instance should be constructed with a kind for Datastore to use e.g.
 ```js
