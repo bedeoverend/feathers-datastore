@@ -1,5 +1,8 @@
 # Change Log
 
+## [v0.1.8](https://github.com/bedeoverend/feathers-datastore/tree/v0.1.8) (2017-05-04)
+[Full Changelog](https://github.com/bedeoverend/feathers-datastore/compare/v0.1.7...v0.1.8)
+
 ## [v0.1.7](https://github.com/bedeoverend/feathers-datastore/tree/v0.1.7) (2017-04-25)
 [Full Changelog](https://github.com/bedeoverend/feathers-datastore/compare/v0.1.6...v0.1.7)
 
