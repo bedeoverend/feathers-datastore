@@ -28,9 +28,9 @@
     string-format-obj "^1.0.0"
     through2 "^2.0.0"
 
-"@google-cloud/datastore@https://github.com/bedeoverend/google-cloud-node/releases/download/datastore-v0.6.2-alpha/datastore.tar.gz":
+"@google-cloud/datastore@https://github.com/bedeoverend/google-cloud-node/releases/download/datastore-v0.6.2.rc1/datastore.tar.gz":
   version "0.6.0"
-  resolved "https://github.com/bedeoverend/google-cloud-node/releases/download/datastore-v0.6.2-alpha/datastore.tar.gz#e151846504339272d32c068fcd1f9ad5042a36ef"
+  resolved "https://github.com/bedeoverend/google-cloud-node/releases/download/datastore-v0.6.2.rc1/datastore.tar.gz#1bab42521a78a1f1b66b97fc31e594b8a2169ccc"
   dependencies:
     "@google-cloud/common" "^0.11.0"
     arrify "^1.0.0"
@@ -2136,11 +2136,11 @@ punycode@^1.4.1:
   version "1.4.1"
   resolved "https://registry.yarnpkg.com/punycode/-/punycode-1.4.1.tgz#c0d5a63b2718800ad8e1eb0fa5269c84dd41845e"
 
-qs@6.2.0, qs@~6.2.0:
+qs@6.2.0, qs@^6.0.1, qs@~6.2.0:
   version "6.2.0"
   resolved "https://registry.yarnpkg.com/qs/-/qs-6.2.0.tgz#3b7848c03c2dece69a9522b0fae8c4126d745f3b"
 
-qs@^6.0.1, qs@~6.3.0:
+qs@~6.3.0:
   version "6.3.0"
   resolved "https://registry.yarnpkg.com/qs/-/qs-6.3.0.tgz#f403b264f23bc01228c74131b407f18d5ea5d442"
 
