@@ -42,7 +42,7 @@ class Datastore {
     return Proto.extend(obj, this);
   }
 
-  _get(id, params) {
+  _get(id, params = {}) {
     let { $select } = params.query || {},
         key = this.makeKey(id, params),
         check404 = entity => entity ? entity : Promise.reject(getNotFound(id)),
@@ -116,7 +116,7 @@ class Datastore {
       });
   }
 
-  _patch(id, data, params) {
+  _patch(id, data, params = {}) {
     const get = Datastore.prototype._get.bind(this),
           find = Datastore.prototype._find.bind(this);
 
@@ -210,7 +210,7 @@ class Datastore {
       .then(retainOnlySelected);
   }
 
-  _remove(id, params) {
+  _remove(id, params = {}) {
     const get = Datastore.prototype._get.bind(this),
           find = Datastore.prototype._find.bind(this);
 
