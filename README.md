@@ -22,6 +22,8 @@ Proper pagination, sorting and certain query filters are not yet implemented. Yo
 
 It's also worth noting that unless you index your datastore properly, you may run into issues running many combined filters. See [querying Google Datastore](https://cloud.google.com/datastore/docs/concepts/queries).
 
+There is also a performance / cost concern with `$select` - as Google Datastore [cannot project](https://cloud.google.com/datastore/docs/concepts/queries#restrictions_on_queries) unindexed properties, this library fetches the entire entity from the database and then filters it out before sending the response.
+
 ### Credentials
 If you're wishing to manually authenticate using credentials, pass a [credentials object](https://googlecloudplatform.github.io/google-cloud-node/#/docs/datastore/1.0.0/guides/authentication) to the service factory function e.g.
 
