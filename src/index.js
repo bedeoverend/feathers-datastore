@@ -2,9 +2,13 @@ import datastore from '@google-cloud/datastore';
 import makeDebug from 'debug';
 import Proto from 'uberproto';
 import { NotFound } from 'feathers-errors';
-const debug = makeDebug('feathers-datastore');
+import { pick } from 'lodash/fp/object';
 
 const MAX_INDEX_SIZE = 1500;
+
+const getNotFound = id => new NotFound(`No record found for id '${id}'`),
+      debug = makeDebug('feathers-datastore'),
+      identity = i => i;
 
 class Datastore {
   constructor(options = {}) {
@@ -39,17 +43,21 @@ class Datastore {
   }
 
   _get(id, params) {
-    let key = this.makeKey(id, params);
+    let { $select } = params.query || {},
+        key = this.makeKey(id, params),
+        check404 = entity => entity ? entity : Promise.reject(getNotFound(id)),
+        retainOnlySelected = identity;
+
+    if ($select) {
+      $select = [ this.id, ...$select ];
+      retainOnlySelected = pick($select);
+    }
+
     return this.store.get(key)
       .then(([ entity ]) => entity)
       .then(entity => this.entityToPlain(entity, true))
-      .then(entity => {
-        if (!entity) {
-          throw new NotFound(`No record found for id '${id}'`);
-        }
-
-        return entity;
-      });
+      .then(check404)
+      .then(retainOnlySelected);
   }
 
   _create(data, params = {}) {
@@ -101,7 +109,7 @@ class Datastore {
         //  a not found, this gets around that, though in future should be made more
         //  secure
         if (err.code === 400 && err.message === 'no entity to update') {
-          throw new NotFound(`No record found for id \'${id}'`);
+          return getNotFound(id);
         }
 
         throw err;
@@ -140,13 +148,21 @@ class Datastore {
   _find(params = {}) {
     params.query = params.query || {};
 
-    let { ancestor, namespace, kind = this.kind, ...query } = params.query,
+    let { ancestor, namespace, kind = this.kind, $select, ...query } = params.query,
         dsQuery = this.store.createQuery(namespace, kind),
+        retainOnlySelected = identity,
+        filterOutAncestor = identity,
         filters;
+
+    if ($select) {
+      let toSelected = pick([ this.id, ...$select ]);
+      retainOnlySelected = data => data.map(toSelected);
+    }
 
     if (ancestor) {
       let ancestorKey = this.makeKey(ancestor, params);
       dsQuery = dsQuery.hasAncestor(ancestorKey);
+      filterOutAncestor = data => data.filter(({ id }) => id !== ancestor);
     }
 
     filters = Object.entries(query)
@@ -190,13 +206,8 @@ class Datastore {
     return dsQuery.run()
       .then(([ e ]) => e)
       .then(entity => this.entityToPlain(entity, true))
-      .then(data => {
-        if (ancestor) {
-          return data.filter(({ id }) => id !== ancestor);
-        }
-
-        return data;
-      });
+      .then(filterOutAncestor)
+      .then(retainOnlySelected);
   }
 
   _remove(id, params) {
