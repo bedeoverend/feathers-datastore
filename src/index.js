@@ -20,7 +20,7 @@ class Datastore {
     this.store = datastore(datastoreOpt);
 
     this.id = options.id || 'id';
-    this.kind = options.kind;
+    this.kind = options.kind || options.name;
     this.events = options.events;
     this.autoIndex = options.autoIndex || false;
 
