@@ -46,7 +46,7 @@
     "lib": "lib"
   },
   "dependencies": {
-    "@google-cloud/datastore": "https://github.com/bedeoverend/google-cloud-node/releases/download/datastore-v0.6.2.rc1/datastore.tar.gz",
+    "@google-cloud/datastore": "^1.4.0",
     "debug": "^2.2.0",
     "feathers-errors": "^2.4.0",
     "lodash": "^4.17.4"
@@ -66,8 +66,8 @@
     "feathers-rest": "^1.5.0",
     "feathers-service-tests": "^0.8.1",
     "jshint": "^2.9.3",
-    "mocha": "^2.5.3",
-    "nsp": "^2.6.1",
+    "mocha": "^5.2.0",
+    "nsp": "^3.2.1",
     "rimraf": "^2.5.4"
   }
 }

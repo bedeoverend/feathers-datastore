@@ -20,9 +20,10 @@ class Datastore {
     this.store = datastore(datastoreOpt);
 
     this.id = options.id || 'id';
-    this.kind = options.kind;
+    this.kind = options.kind || options.name;
     this.events = options.events;
     this.autoIndex = options.autoIndex || false;
+    this.namespace = options.namespace || undefined;
 
     // NOTE: This isn't nice, but it's the only way to give internal methods full
     //  unrestricted (no hooks) access to all methods
@@ -149,7 +150,7 @@ class Datastore {
     params.query = params.query || {};
 
     let { ancestor, namespace, kind = this.kind, $select, ...query } = params.query,
-        dsQuery = this.store.createQuery(namespace, kind),
+        dsQuery = this.store.createQuery(namespace || this.namespace, kind),
         retainOnlySelected = identity,
         filterOutAncestor = identity,
         filters;
@@ -250,8 +251,8 @@ class Datastore {
       key = this.store.key([ this.kind, id ]);
     }
 
-    if (query.namespace) {
-      key.namespace = query.namespace;
+    if (query.namespace || this.namespace) {
+      key.namespace = query.namespace || this.namespace;
     }
 
     return key;
